@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 <head>
-<title id="widget-title">Opera Extensions | Name of Extension</title>
+<title id="widget-title">Irish Rail | Iarnród Éireann</title>
+<script src="stations.js"></script>
 <style>
 html
 {
@@ -69,7 +70,7 @@ legend
 header{
     height:64px;
     padding-left:72px;
-    background:url(64.png) 2px 2px no-repeat;
+    background:url(ie.png) 2px 2px no-repeat;
     margin-bottom:32px;
     white-space:nowrap;
 }
@@ -104,22 +105,11 @@ header{
     <header class="view-mode"><h1><span id="widget-name">Extension name</span></h1><h2>by <a href="#" id="widget-author">Developer</a></h2></header>
     <div>
         <fieldset>
-            <legend>Choose feed from the list:</legend>
-            <select name="defaultFeed">
+            <legend>Choose Station:</legend>
+            <select id="stationCode" name="stationCode">
                 <option value=""></option>
-                <option value="http://rss.slashdot.org/Slashdot/slashdot">Slashdot</option>
-                <option value="http://feeds.bbci.co.uk/news/rss.xml">BBC News</option>
-                <option value="http://feeds.wired.com/wired/index">Wired</option>
-                <option value="http://www.engadget.com/rss.xml">Engadget</option>
-                <option value="http://feeds.reuters.com/reuters/topNews">Reuters</option>
             </select>
         </fieldset>
-        
-        <fieldset>
-            <legend>Or add your favourite feed URL:</legend>
-            <input class="feed-url" type="url" name="feedUrl" value=""/>
-        </fieldset>
-        
         <fieldset>
             <legend>Choose feeds number:</legend>
             <input type="number" name="count" min="1" value="1"/>
@@ -140,14 +130,24 @@ header{
 {
     var storage = window.widget.preferences;
     var formElements = document.querySelectorAll( 'input,select' );
+	
+	function addStations(){
+		var list = document.getElementById('stationCode');
+		for(station in stations){
+			var option = document.createElement('option');
+			option.value=station;
+			option.innerHTML=stations[station].en;
+			list.appendChild(option);
+		}
+	}
+	addStations();
+	
 
-    function walkElements()
-    {
+    function walkElements(){
         var type,
             value;
             
-        for( var i=0,element=null; element=formElements[i++]; )
-        {
+        for( var i=0,element=null; element=formElements[i++]; ){
             value = storage.getItem(element.name);
             type = element.type.toLowerCase();
             if (type == 'number') element.value = value;
@@ -160,15 +160,11 @@ header{
                     }
                 }
             }
-            else if (type == 'url' && (!storage.getItem( 'defaultFeed') || storage.getItem( 'defaultFeed') == '')){
-                document.getElementsByName('feedUrl')[0].value = value;
-            }
             element.addEventListener( 'change', changedElement, true );
         }
     }
 
-    function changedElement(e)
-    {
+    function changedElement(e){
         var element = e.currentTarget;
         var type    = element.type.toLowerCase();
         var name    = element.name;
@@ -181,20 +177,13 @@ header{
         }
         else if (type == 'select-one') {
             value = element.options[element.selectedIndex].value;
-            document.getElementsByName('feedUrl')[0].value = '';
-            storage.setItem( 'feedUrl', value );
-        }
-        else if (type == 'url'){
-            document.getElementsByName('defaultFeed')[0].selectedIndex = 0;
-            storage.setItem( 'defaultFeed', '' );
         }
         storage.setItem( name, value );
     }
     
     walkElements();
     
-    function $( id, txt, href )
-    {
+    function $( id, txt, href ){
         var e = document.getElementById(id);
         if( e )
         {
