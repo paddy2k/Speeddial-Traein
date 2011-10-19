@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="https://addons.opera.com/addons/extensions/details/live-news-feed/" version="1.11" viewmodes="minimized">
+  <name>Iarnród Éireann</name>
+  <feature name="opera:speeddial">
+    <param name="url" value="http://irishrail.ie"/>
+  </feature>
+  <icon src="ie.png"/>
+  <access origin="*"/>
+  <preference name="feedUrl" value=""/>
+  <preference name="count" value="5"/>
+  <preference name="interval" value="7"/>
+  <preference name="defaultFeed" value="http://www.irishrail.ie/realtime/publicinfo.asp?strLocation=cnlly"/>
+  <author href="http://smallroomstudios.net">Smallroomstudios.net</author>
+  <description xml:lang="en">Get realtime timetable information for Irish Rail stations.</description>
+</widget>
