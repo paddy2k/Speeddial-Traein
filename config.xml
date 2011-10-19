@@ -8,7 +8,7 @@
   <access origin="*"/>
   <preference name="feedUrl" value="http://www.irishrail.ie/realtime/publicinfo.asp?strLocation="/>
   <preference name="count" value="5"/>
-  <preference name="interval" value="7"/>
+  <preference name="interval" value="60"/>
   <preference name="stationCode" value="cnlly"/>
   <author href="http://smallroomstudios.net">Smallroomstudios.net</author>
   <description xml:lang="en">Get realtime timetable information for Irish Rail stations. Source: https://github.com/paddy2k/Speeddial-Traein</description>

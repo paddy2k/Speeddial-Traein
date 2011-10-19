@@ -17,9 +17,11 @@
         }
     
     // update feeds in the speed-dial
-    function _updateFeeds(i)
-    {
+    function _updateFeeds(){
         clearTimeout(_data.timer);
+        opera.contexts.speeddial.title = "Set Station";
+        opera.contexts.speeddial.url = "options.html";        
+        document.getElementById('arrivals').innerHTML='';
         for(i=0;i<_data.count;i++){
 			var arrival = document.createElement('div');
 			arrival.className='arrival';
@@ -40,9 +42,7 @@
 		document.getElementById('irish').innerHTML = stations[_data.station].ga;
 
         opera.contexts.speeddial.title = stations[_data.station].en;
-        opera.contexts.speeddial.url = "http://www.irishrail.ie";        
-        // switch feeds every X seconds
-        _data.timer = setTimeout(function(){_updateFeeds(next)}, _data.interval  * 1000);
+        opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;        
     }
 
     function _clearData(message){
@@ -101,8 +101,7 @@
     }
 
     // get feeds from url
-    function _XHRFeed()
-    {
+    function _XHRFeed(){
         clearTimeout(_updateTimer);
         if (!_data.feed || _data.feed == ''){
             _clearData();
@@ -114,12 +113,10 @@
         xhr.onreadystatechange=function()
         {
             if( this.readyState!==4 ){
-                _clearData('...');
                 return false;
             };
-
             _processData( this.responseXML );
-            _updateTimer = setTimeout( _XHRFeed, 1000*120 );
+            _updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
         }
         xhr.send(null);
     }
@@ -210,7 +207,7 @@
     }
     #stationName{
 		background-color:white;
-		border: 5px solid #f8991c;
+		border: 5px solid #eb8400;
 		border-left: 0px;
 		border-right: 0px;
 		text-align:center;
@@ -223,10 +220,10 @@
     	font-style:italic;
     }
     #arrivals{
-    	color:#f8991c;
+    	color:#eb8400;
     }
 	.arrival{
-	border-bottom:1px solid #f8991c;
+	border-bottom:1px solid #eb8400;
     }
     .arrival .to{
 		font-weight:bold;
@@ -245,8 +242,8 @@
 	</div>
 	<div id="olie" style="background-color:">
 		<div id="stationName">
-			<div id="irish">Statisun na bPiarsach</div>
-			<div id="english">Pearse Station</div>
+			<div id="irish">Socraigh an Stáisiúin</div>
+			<div id="english">Set Station</div>
 		</div>
 		<div id="arrivals">
 		</div>
