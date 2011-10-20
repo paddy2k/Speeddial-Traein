@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Iarnród Éireann</title>
+    <title>Traein</title>
 <script src="stations.js"></script>
 <script>
 (function(){
@@ -19,8 +19,10 @@
     // update feeds in the speed-dial
     function _updateFeeds(){
         clearTimeout(_data.timer);
-        opera.contexts.speeddial.title = "Set Station";
-        opera.contexts.speeddial.url = "options.html";        
+        
+//        opera.contexts.speeddial.title = "Set Station";
+//        opera.contexts.speeddial.url = "options.html";
+           
         document.getElementById('arrivals').innerHTML='';
         for(i=0;i<_data.count;i++){
 			var arrival = document.createElement('div');
@@ -36,14 +38,7 @@
 			arrival.appendChild(from);
 		    document.getElementById('arrivals').appendChild(arrival);
 		}
-                
-//        opera.contexts.speeddial.url = _data.items[ind].href;
-		document.getElementById('english').innerHTML = stations[_data.station].en;
-		document.getElementById('irish').innerHTML = stations[_data.station].ga;
-
-        opera.contexts.speeddial.title = stations[_data.station].en;
-        opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;        
-    }
+	}
 
     function _clearData(message){
         var info = document.getElementById('prefs');
@@ -60,8 +55,25 @@
     // process the data received from the XHR
     function _processData(xmlDoc){
         var items = xmlDoc.getElementsByTagName('item');
-        //_data.station = xmlDoc.getElementsByTagName('title')[0].textContext;
-        var len = items.length;
+
+		// Set Station Name and Link
+		document.getElementById('english').innerHTML = stations[_data.station].en;
+		document.getElementById('irish').innerHTML = stations[_data.station].ga;
+        opera.contexts.speeddial.title = stations[_data.station].en;
+        opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;
+
+        var len = items.length;        
+        	console.log(len==0);
+        if(len==0){
+        	document.getElementById('noTrains').style.display = 'block';
+			opera.contexts.speeddial.title = "No Trains";
+			opera.contexts.speeddial.url = "http://www.irishrail.ie";
+			return false;
+        }
+        else{
+        	document.getElementById('noTrains').style.display = 'none';
+        }
+        
         if (_data.count > len) _data.count = len;
         
         if (_data.count == 0 || len == 0){
@@ -106,6 +118,11 @@
         if (!_data.feed || _data.feed == ''){
             _clearData();
             return;
+        }
+        
+        if(_data.station ==''){
+        	_updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
+        	return false;
         }
         
         xhr = new XMLHttpRequest();
@@ -219,15 +236,23 @@
     	font-weight:bold;
     	font-style:italic;
     }
+    #noTrains,
     #arrivals{
     	color:#eb8400;
     }
 	.arrival{
 	border-bottom:1px solid #eb8400;
     }
+    #noTrains,
     .arrival .to{
 		font-weight:bold;
     }
+	#noTrains{
+		display:none;
+		font-size:1.4em;
+		text-align:center;
+		margin-top:40px;
+	}
 </style>
 </head>
 <body>
@@ -246,6 +271,9 @@
 			<div id="english">Set Station</div>
 		</div>
 		<div id="arrivals">
+		</div>
+		<div id="noTrains">
+			No Trains
 		</div>
 	</div>
 </body>
