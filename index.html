@@ -97,7 +97,8 @@
         clearTimeout(_updateTimer);
 
         document.getElementById('noTrains').style.display = 'none';
-        if(_data.station ==''){
+        if(_data.station =='' || _data.station ==null){
+
     		// Set Station Name and Link
 			document.getElementById('irish').innerHTML = "Socraigh an Stáisiúin";
 			document.getElementById('english').innerHTML = "Set Station";
@@ -105,7 +106,7 @@
         	_updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
         	return false;
         }
-        
+
         xhr = new XMLHttpRequest();
         d = new Date().getTime();
         xhr.open( 'GET', _data.feed + _data.station + '&rand=' + d, true );
