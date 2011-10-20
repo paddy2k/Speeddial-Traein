@@ -22,8 +22,7 @@
         
 //        opera.contexts.speeddial.title = "Set Station";
 //        opera.contexts.speeddial.url = "options.html";
-           
-        document.getElementById('arrivals').innerHTML='';
+        
         for(i=0;i<_data.count;i++){
 			var arrival = document.createElement('div');
 			arrival.className='arrival';
@@ -51,7 +50,7 @@
         opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;
 
         var len = items.length;        
-        	console.log(len==0);
+        document.getElementById('arrivals').innerHTML='';
         if(len==0){
         	document.getElementById('noTrains').style.display = 'block';
 			opera.contexts.speeddial.title = "No Trains";
