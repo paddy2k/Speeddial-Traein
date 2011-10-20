@@ -39,18 +39,6 @@
 		    document.getElementById('arrivals').appendChild(arrival);
 		}
 	}
-
-    function _clearData(message){
-        var info = document.getElementById('prefs');
-        info.style.display = '';
-        if (message) info.textContent = message;
-        else info.textContent = 'Click here to set station!';
-        
-        opera.contexts.speeddial.url = 'options.html';
-        opera.contexts.speeddial.title = "Set Station";
-        _data.items = [];
-        clearTimeout(_data.timer);
-    }
     
     // process the data received from the XHR
     function _processData(xmlDoc){
@@ -70,16 +58,8 @@
 			opera.contexts.speeddial.url = "http://www.irishrail.ie";
 			return false;
         }
-        else{
-        	document.getElementById('noTrains').style.display = 'none';
-        }
         
         if (_data.count > len) _data.count = len;
-        
-        if (_data.count == 0 || len == 0){
-            _clearData("No data!");
-            return;
-        }
         
         for (var i = 0; i < _data.count; i ++){
             _parseItem(items[i]);
@@ -115,12 +95,13 @@
     // get feeds from url
     function _XHRFeed(){
         clearTimeout(_updateTimer);
-        if (!_data.feed || _data.feed == ''){
-            _clearData();
-            return;
-        }
         
+        document.getElementById('noTrains').style.display = 'none';
         if(_data.station ==''){
+    		// Set Station Name and Link
+			document.getElementById('irish').innerHTML = "Socraigh an Stáisiúin";
+			document.getElementById('english').innerHTML = "Set Station";
+			opera.contexts.speeddial.url = "options.html";
         	_updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
         	return false;
         }
@@ -267,8 +248,8 @@
 	</div>
 	<div id="olie" style="background-color:">
 		<div id="stationName">
-			<div id="irish">Socraigh an Stáisiúin</div>
-			<div id="english">Set Station</div>
+			<div id="irish">Á Luchtú...</div>
+			<div id="english">Loading...</div>
 		</div>
 		<div id="arrivals">
 		</div>
