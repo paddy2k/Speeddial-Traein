@@ -49,8 +49,9 @@
         opera.contexts.speeddial.title = stations[_data.station].en;
         opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;
 
-        var len = items.length;        
         document.getElementById('arrivals').innerHTML='';
+
+        var len = items.length;
         if(len==0){
         	document.getElementById('noTrains').style.display = 'block';
 			opera.contexts.speeddial.title = "No Trains";
@@ -59,7 +60,7 @@
         }
         
         if (_data.count > len) _data.count = len;
-        
+		_data.items = [];
         for (var i = 0; i < _data.count; i ++){
             _parseItem(items[i]);
         }
@@ -94,7 +95,7 @@
     // get feeds from url
     function _XHRFeed(){
         clearTimeout(_updateTimer);
-        
+
         document.getElementById('noTrains').style.display = 'none';
         if(_data.station ==''){
     		// Set Station Name and Link
@@ -106,12 +107,14 @@
         }
         
         xhr = new XMLHttpRequest();
-        xhr.open( 'GET', _data.feed + _data.station, true );
+        d = new Date().getTime();
+        xhr.open( 'GET', _data.feed + _data.station + '&rand=' + d, true );
         xhr.onreadystatechange=function()
         {
             if( this.readyState!==4 ){
                 return false;
             };
+
             _processData( this.responseXML );
             _updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
         }
