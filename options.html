@@ -111,6 +111,14 @@ header{
             </select>
         </fieldset>
         <fieldset>
+            <legend>Direction:</legend>
+            <select id="direction" name="direction">
+                <option value="">Both</option>
+                <option value="Southbound">Northbound</option>
+                <option value="Northbound">Southbound</option>
+            </select>
+        </fieldset>
+        <fieldset>
             <legend>Choose feeds number:</legend>
             <input type="number" name="count" min="1" value="1"/>
         </fieldset>
@@ -200,8 +208,6 @@ header{
     $( 'widget-author', widget.author, widget.authorHref );
 
 })();
-
-
 </script>
 </body>
 </html>

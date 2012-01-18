@@ -5,6 +5,9 @@
 <script src="stations.js"></script>
 <script>
 (function(){
+
+	var new_api = "http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML?StationCode=";
+	widget.preferences.feedUrl = widget.preferences.feedUrl == new_api ? widget.preferences.feedUrl : new_api;
     var _data  =
         {
             feed        : '',
@@ -18,78 +21,98 @@
     
     // update feeds in the speed-dial
     function _updateFeeds(){
-        clearTimeout(_data.timer);
+      clearTimeout(_data.timer);
         
 //        opera.contexts.speeddial.title = "Set Station";
 //        opera.contexts.speeddial.url = "options.html";
         
-        for(i=0;i<_data.count;i++){
-			var arrival = document.createElement('div');
-			arrival.className='arrival';
-			var to = document.createElement('div');
-			to.className='to';
-			to.textContent = _data.items[i].title;
-			var from = document.createElement('div');
-			from.className='arrival';
-			from.textContent = _data.items[i].desc;
-			
-			arrival.appendChild(to);
-			arrival.appendChild(from);
+      for(i=0;i<_data.count;i++){
+	  		var arrival = document.createElement('div');
+	  		arrival.className='arrival';
+	  		var to = document.createElement('div');
+  			to.className='to';
+  			to.textContent = _data.items[i].title;
+  			var from = document.createElement('div');
+  			from.className='arrival';
+  			from.textContent = _data.items[i].desc;
+  			
+  			arrival.appendChild(to);
+  			arrival.appendChild(from);
 		    document.getElementById('arrivals').appendChild(arrival);
 		}
 	}
     
     // process the data received from the XHR
     function _processData(xmlDoc){
-        var items = xmlDoc.getElementsByTagName('item');
+      var items = xmlDoc.getElementsByTagName('objStationData');
+		  widget.preferences.items = items;
+		  // Set Station Name and Link
+		  document.getElementById('english').innerHTML = stations[_data.station].en;
+		  document.getElementById('irish').innerHTML = stations[_data.station].ga;
+	
+      opera.contexts.speeddial.title = stations[_data.station].en;
+      opera.contexts.speeddial.url = "http://www.irishrail.ie/station_updates.jsp?station_updates="+stations[_data.station].en;
 
-		// Set Station Name and Link
-		document.getElementById('english').innerHTML = stations[_data.station].en;
-		document.getElementById('irish').innerHTML = stations[_data.station].ga;
-        opera.contexts.speeddial.title = stations[_data.station].en;
-        opera.contexts.speeddial.url = "http://www.irishrail.ie/your_journey/ajax/ajaxRefreshResults.asp?station="+stations[_data.station].en;
+      document.getElementById('arrivals').innerHTML='';
 
-        document.getElementById('arrivals').innerHTML='';
-
-        var len = items.length;
-        if(len==0){
-        	document.getElementById('noTrains').style.display = 'block';
-			opera.contexts.speeddial.title = "No Trains";
-			opera.contexts.speeddial.url = "http://www.irishrail.ie";
-			return false;
-        }
+      var len = items.length;
+      if(len==0){
+      	document.getElementById('noTrains').style.display = 'block';
+	  		opera.contexts.speeddial.title = "No Trains";
+	  		opera.contexts.speeddial.url = "http://www.irishrail.ie";
+	  		return false;
+      }
         
-        if (_data.count > len) _data.count = len;
-		_data.items = [];
-        for (var i = 0; i < _data.count; i ++){
-            _parseItem(items[i]);
-        }
+      if (_data.count > len) _data.count = len;
+    		_data.items = [];
+        for(var i = 0;i < items.length;i++){
+          _parseItem(items[i]);
+      }
+                
+        // Sort the trains by time
+      _data.items.sort(function(a,b){
+			  var c = new Date(Date.parse(a.time));
+		  	if(c.getHours() == 0){c.setDate(c.getDate()+1)}
+		  	var d = new Date(Date.parse(b.time));
+		  	if(d.getHours() == 0){d.setDate(d.getDate()+1)}
+	
+			  return c.getTime() - d.getTime();
+		  });
 //       document.getElementById('prefs').style.display = 'none';
 //        document.getElementById('counter').style.display = '';
-        _updateFeeds();
+      _updateFeeds();
     }
     
     // parse single DOM Element
     function _parseItem(item){
-        // sometimes descriptions contains tags like IMG
-        var XMLdesc = item.getElementsByTagName('description')[0].textContent;
-        var XMLtitle = item.getElementsByTagName('title')[0].textContent;
-       
-        var patt = /^Terminates/ig;
-        var terminates =patt.test(XMLtitle);
+        // sometimes descriptions contains tags like IMG.
+        var Destination = item.getElementsByTagName('Destination')[0].textContent;
+        var Expdepart = item.getElementsByTagName('Expdepart')[0].textContent;
+        var Exparrival = item.getElementsByTagName('Exparrival')[0].textContent;
+        var Origin = item.getElementsByTagName('Origin')[0].textContent;
+        var Locationtype = item.getElementsByTagName('Locationtype')[0].textContent;
+        var Traindate = item.getElementsByTagName('Traindate')[0].textContent;
+        var Direction = item.getElementsByTagName('Direction')[0].textContent;
+
+        if(!(Direction!=widget.preferences.direction)){
+        	return false;
+        }
         
-        if(terminates){
-	    	var title = XMLdesc.replace(/\s-\s\s\sTerm.*$/ig, "").replace(/^.*\s:\s/ig,"") + " Terminates";
+        if(Locationtype=='D'){
+			var title = Exparrival + ' Terminates';
+			var time = Exparrival;
         }
         else{
-			var title =  XMLdesc.replace(/\s\|\s-\s\s\sSch.*$/ig, "").replace(/^.*\s:/ig,"");
-			title += " "+ XMLtitle.replace(/^.*to\s/ig,"");
+            var title = Expdepart + ' '+ Destination;
+			var time = Expdepart;
         }
         
         _data.items.push({
-            title   : title,
-            desc    : "Arriving from " + XMLdesc.replace(/^.*Origin\s:\s/ig,"").replace(/\s-\s.*$/ig,""),
-        })
+          title   : title,
+          desc : "Arriving from " + Origin,
+          time : Traindate+","+time,
+        });
+        return true;
     }
 
     // get feeds from url
@@ -261,5 +284,4 @@
 		</div>
 	</div>
 </body>
-
 </html>
