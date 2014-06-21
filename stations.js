@@ -625,6 +625,10 @@ var stations ={
 		en: "Dunboyne",
 		ga: "Dún Búinne"
 	},
+	HAFLD: {
+    	en: "Hansfield",
+    	ga: "Páirc Hans"
+  	},
 	M3WAY: {
 		en: "M3 Parkway",
 		ga: "Ollpháirc M3"

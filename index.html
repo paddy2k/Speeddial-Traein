@@ -51,7 +51,7 @@
 		  document.getElementById('irish').innerHTML = stations[_data.station].ga;
 	
       opera.contexts.speeddial.title = stations[_data.station].en;
-      opera.contexts.speeddial.url = "http://www.irishrail.ie/station_updates.jsp?station_updates="+stations[_data.station].en;
+      opera.contexts.speeddial.url = "http://www.irishrail.ie/timetables/live-departure-times?code=" + _data.station;
 
       document.getElementById('arrivals').innerHTML='';
 
