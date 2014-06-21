@@ -8,7 +8,7 @@
 "icons" : {"128": "ie.png"},
 "options_page" : "options.html",
 "web_accessible_resources" : ["AUTHORS","LICENCE","README","ie.png","options.bg.png","stations.js","LICENSE.TXT"],
-"permissions" : ["https://*/*", "storage", "http://*/*"],
+"permissions" : ["speeddial", "webRequest","http://*/*","https://*/*"],
 "speeddial" : {"url": "http://www.irishrail.ie"},
 "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'unsafe-eval';"
 }
