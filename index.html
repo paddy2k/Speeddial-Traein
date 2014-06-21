@@ -1,287 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Traein</title>
-<script src="stations.js"></script>
-<script>
-(function(){
-
-	var new_api = "http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML?StationCode=";
-	widget.preferences.feedUrl = widget.preferences.feedUrl == new_api ? widget.preferences.feedUrl : new_api;
-    var _data  =
-        {
-            feed        : '',
-            count       : 1,
-            interval    : 7,
-            prefs       : widget.preferences,
-            items       : [],
-            timer       : null,
-            station		: '',
-        }
-    
-    // update feeds in the speed-dial
-    function _updateFeeds(){
-      clearTimeout(_data.timer);
-        
-//        opera.contexts.speeddial.title = "Set Station";
-//        opera.contexts.speeddial.url = "options.html";
-        
-      for(i=0;i<_data.count;i++){
-	  		var arrival = document.createElement('div');
-	  		arrival.className='arrival';
-	  		var to = document.createElement('div');
-  			to.className='to';
-  			to.textContent = _data.items[i].title;
-  			var from = document.createElement('div');
-  			from.className='arrival';
-  			from.textContent = _data.items[i].desc;
-  			
-  			arrival.appendChild(to);
-  			arrival.appendChild(from);
-		    document.getElementById('arrivals').appendChild(arrival);
-		}
-	}
-    
-    // process the data received from the XHR
-    function _processData(xmlDoc){
-      var items = xmlDoc.getElementsByTagName('objStationData');
-		  widget.preferences.items = items;
-		  // Set Station Name and Link
-		  document.getElementById('english').innerHTML = stations[_data.station].en;
-		  document.getElementById('irish').innerHTML = stations[_data.station].ga;
-	
-      opera.contexts.speeddial.title = stations[_data.station].en;
-      opera.contexts.speeddial.url = "http://www.irishrail.ie/timetables/live-departure-times?code=" + _data.station;
-
-      document.getElementById('arrivals').innerHTML='';
-
-      var len = items.length;
-      if(len==0){
-      	document.getElementById('noTrains').style.display = 'block';
-	  		opera.contexts.speeddial.title = "No Trains";
-	  		opera.contexts.speeddial.url = "http://www.irishrail.ie";
-	  		return false;
-      }
-        
-      if (_data.count > len) _data.count = len;
-    		_data.items = [];
-        for(var i = 0;i < items.length;i++){
-          _parseItem(items[i]);
-      }
-                
-        // Sort the trains by time
-      _data.items.sort(function(a,b){
-			  var c = new Date(Date.parse(a.time));
-		  	if(c.getHours() == 0){c.setDate(c.getDate()+1)}
-		  	var d = new Date(Date.parse(b.time));
-		  	if(d.getHours() == 0){d.setDate(d.getDate()+1)}
-	
-			  return c.getTime() - d.getTime();
-		  });
-//       document.getElementById('prefs').style.display = 'none';
-//        document.getElementById('counter').style.display = '';
-      _updateFeeds();
-    }
-    
-    // parse single DOM Element
-    function _parseItem(item){
-        // sometimes descriptions contains tags like IMG.
-        var Destination = item.getElementsByTagName('Destination')[0].textContent;
-        var Expdepart = item.getElementsByTagName('Expdepart')[0].textContent;
-        var Exparrival = item.getElementsByTagName('Exparrival')[0].textContent;
-        var Origin = item.getElementsByTagName('Origin')[0].textContent;
-        var Locationtype = item.getElementsByTagName('Locationtype')[0].textContent;
-        var Traindate = item.getElementsByTagName('Traindate')[0].textContent;
-        var Direction = item.getElementsByTagName('Direction')[0].textContent;
-
-        if(!(Direction!=widget.preferences.direction)){
-        	return false;
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="oex_shim/operaextensions_background.js"></script>
+    <script src="exported_prefs.js"></script>
+    <script src="stations.js"></script>
+    <script src="inline_script_index_1.js"></script> 
+    <style>
+        body {	
+        	margin:0px;
+        	font-size:12px;
+        	padding:1em;    	
+        	background-color:#f2f2f2;
+        	font-family:sans-serif;
         }
         
-        if(Locationtype=='D'){
-			var title = Exparrival + ' Terminates';
-			var time = Exparrival;
-        }
-        else{
-            var title = Expdepart + ' '+ Destination;
-			var time = Expdepart;
+        p { 
+        	font-size:1em; line-height:1.4em;
+        	color:#222;
         }
         
-        _data.items.push({
-          title   : title,
-          desc : "Arriving from " + Origin,
-          time : Traindate+","+time,
-        });
-        return true;
-    }
-
-    // get feeds from url
-    function _XHRFeed(){
-        clearTimeout(_updateTimer);
-
-        document.getElementById('noTrains').style.display = 'none';
-        if(_data.station =='' || _data.station ==null){
-
-    		// Set Station Name and Link
-			document.getElementById('irish').innerHTML = "Socraigh an Stáisiúin";
-			document.getElementById('english').innerHTML = "Set Station";
-			opera.contexts.speeddial.url = "options.html";
-        	_updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
-        	return false;
+        p#date { 
+        	font-size:.75em;
+        	color:#777; margin:0;
         }
-
-        xhr = new XMLHttpRequest();
-        d = new Date().getTime();
-        xhr.open( 'GET', _data.feed + _data.station + '&rand=' + d, true );
-        xhr.onreadystatechange=function()
-        {
-            if( this.readyState!==4 ){
-                return false;
-            };
-
-            _processData( this.responseXML );
-            _updateTimer = setTimeout( _XHRFeed, 1000*_data.interval );
-        }
-        xhr.send(null);
-    }
-    
-    // storage handler for the options page
-    function _storageHandler()
-    {
-        clearTimeout(_updateTimer);
-        _data.feed = _data.prefs.getItem('feedUrl');
-        _data.station = _data.prefs.getItem('stationCode');
-        _data.count = _data.prefs.getItem('count');
-        _data.interval = _data.prefs.getItem('interval');
         
-        _XHRFeed();
-    }
-    
-    // force an update of the storage values
-    var _updateTimer = setTimeout( _storageHandler, 100 );
-    // against fast changes on options page
-    addEventListener( 'storage', 
-        function(){
-            _updateTimer = setTimeout( _storageHandler, 500);
+        h1 {
+        	font-size:1.5em; font-weight:normal;
+        	font-family:Georgia, serif;
+        	color:#bf2020;
+        	text-shadow:0 1px 0 #fff;
         }
-    , false );
-
-})();
-</script>
-<style>
-    body {	
-    	margin:0px;
-    	font-size:12px;
-    	padding:1em;    	
-    	background-color:#f2f2f2;
-    	font-family:sans-serif;
-    }
-    
-    p { 
-    	font-size:1em; line-height:1.4em;
-    	color:#222;
-    }
-    
-    p#date { 
-    	font-size:.75em;
-    	color:#777; margin:0;
-    }
-    
-    h1 {
-    	font-size:1.5em; font-weight:normal;
-    	font-family:Georgia, serif;
-    	color:#bf2020;
-    	text-shadow:0 1px 0 #fff;
-    }
-    
-    #fadeout { 
-    	position:absolute; bottom:0;
-    	width:100%; height:30px;
-    	background: -o-linear-gradient(rgba(242,242,242,0), rgba(242,242,242,1));
-    }
-    
-    #prefs { padding-top:50px; text-align:center; }
-    
-    #counter { 
-    	font-family:Georgia, serif; color:#555;
-    	position:absolute; right:10px; top:0;
-    	border:1px solid #c2c2c2; border-top:none;
-    	padding:4px; margin:0; background-color:#f9f9f9;
-    	border-bottom-right-radius: 4px;
-		border-bottom-left-radius: 4px;
-		box-shadow:1px 1px 0 #fff;
-    }
-    
-    #inset {
-    	position:absolute;
-    	width:100%; height:100%;
-    	top:0; left:0;
-    	box-shadow:inset 0 2px 6px rgba(0,0,0,.3);
-    	z-index:999;
-    }
-    
-    
-    
-    html,body,#olie{
-    	width:100%;
-    	height:100%;
-    	background-color:black;
-    	margin:0px;
-    	padding:0px;    	
-    }
-    #stationName{
-		background-color:white;
-		border: 5px solid #eb8400;
-		border-left: 0px;
-		border-right: 0px;
-		text-align:center;
-    }
-    #english{
-    	font-weight:bold;
-    }
-    #irish{
-    	font-weight:bold;
-    	font-style:italic;
-    }
-    #noTrains,
-    #arrivals{
-    	color:#eb8400;
-    }
-	.arrival{
-	border-bottom:1px solid #eb8400;
-    }
-    #noTrains,
-    .arrival .to{
-		font-weight:bold;
-    }
-	#noTrains{
-		display:none;
-		font-size:1.4em;
-		text-align:center;
-		margin-top:40px;
-	}
-</style>
+        
+        #fadeout { 
+        	position:absolute; bottom:0;
+        	width:100%; height:30px;
+        	background: -o-linear-gradient(rgba(242,242,242,0), rgba(242,242,242,1));
+        }
+        
+        #prefs { padding-top:50px; text-align:center; }
+        
+        #counter { 
+        	font-family:Georgia, serif; color:#555;
+        	position:absolute; right:10px; top:0;
+        	border:1px solid #c2c2c2; border-top:none;
+        	padding:4px; margin:0; background-color:#f9f9f9;
+        	border-bottom-right-radius: 4px;
+    		border-bottom-left-radius: 4px;
+    		box-shadow:1px 1px 0 #fff;
+        }
+        
+        #inset {
+        	position:absolute;
+        	width:100%; height:100%;
+        	top:0; left:0;
+        	box-shadow:inset 0 2px 6px rgba(0,0,0,.3);
+        	z-index:999;
+        }
+        
+        
+        
+        html,body,#olie{
+        	width:100%;
+        	height:100%;
+        	background-color:black;
+        	margin:0px;
+        	padding:0px;    	
+        }
+        #stationName{
+    		background-color:white;
+    		border: 5px solid #eb8400;
+    		border-left: 0px;
+    		border-right: 0px;
+    		text-align:center;
+        }
+        #english{
+        	font-weight:bold;
+        }
+        #irish{
+        	font-weight:bold;
+        	font-style:italic;
+        }
+        #noTrains,
+        #arrivals{
+        	color:#eb8400;
+        }
+    	.arrival{
+    	border-bottom:1px solid #eb8400;
+        }
+        #noTrains,
+        .arrival .to{
+    		font-weight:bold;
+        }
+    	#noTrains{
+    		display:none;
+    		font-size:1.4em;
+    		text-align:center;
+    		margin-top:40px;
+    	}
+    </style>
 </head>
 <body>
-	<div style="display:none;">
-		<div id="inset"></div>
-		<div id="fadeout"></div>
-		<p id="counter"></p>
-		<p id="date"></p>
-		<h1 id="title"></h1>
-		<p id="desc"></p>
-		<p id="prefs" style="display:none"></p>
-	</div>
-	<div id="olie" style="background-color:">
-		<div id="stationName">
-			<div id="irish">Á Luchtú...</div>
-			<div id="english">Loading...</div>
-		</div>
-		<div id="arrivals">
-		</div>
-		<div id="noTrains">
-			No Trains
-		</div>
-	</div>
+    <div style="display:none;">
+        <div id="inset"></div>
+        <div id="fadeout"></div>
+        <p id="counter"></p>
+        <p id="date"></p>
+        <h1 id="title"></h1>
+        <p id="desc"></p>
+        <p id="prefs" style="display:none"></p>
+    </div>
+    <div id="olie" style="background-color:">
+        <div id="stationName">
+            <div id="irish">Á Luchtú...</div>
+            <div id="english">Loading...</div>
+        </div>
+        <div id="arrivals"></div>
+        <div id="noTrains"> No Trains </div>
+    </div>
 </body>
 </html>
